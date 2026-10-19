@@ -32,7 +32,7 @@ grandkids and pays bills online. When a strange message arrives she wants a clea
 and a clear next step, without jargon and without feeling silly for asking. Her eyesight
 isn't what it was, and small text and busy screens tire her. She uses **Simple mode**.
 
-**Jordan, 19 (new in phase 2).** At ease with technology and always moving. Scams reach
+**Jordan, 19 (secondary).** At ease with technology and always moving. Scams reach
 Jordan through texts, DMs, job sites, Discord, payment apps, and online marketplaces.
 Jordan wants a quick answer with as few steps as possible, and uses **Quick mode**.
 
@@ -59,6 +59,7 @@ wherever he is.
 | **Family safety plan** | Explains AI voice-cloning scams and helps a family choose a code word, trusted contacts, and a rule, then makes a printable card and a shareable summary (the code word is left out by default). Nothing is sent or saved. |
 | **English and Spanish** | Every screen, step, and the call coach are translated, the AI answers in the chosen language, and the page `lang` changes so screen readers pronounce it correctly. |
 | **Settings on every screen** | Language, three text sizes, high contrast, reduce motion, and reading speed. Changes apply instantly and nothing typed is lost. |
+| **Home from anywhere** | The SafeCheck logo always opens the main home page (switching to Simple mode if needed) and replays its entrance animations, even when you are already on it. |
 
 ## User flows
 
@@ -98,9 +99,10 @@ SafeCheck targets **WCAG 2.2 AA** in both modes and both languages.
 - **Plain language:** short sentences at about a 6th-grade reading level, in both modes
   and both languages. The AI is told to write the same way.
 
-**How it was tested (phase 2):** an automated browser test suite drove real Chrome through
-every flow above (85 checks: 52 flow and accessibility checks, 10 QR checks with real
-QR images including a tilted photo, and 23 keyboard-only checks). The axe accessibility
+**How it was tested:** an automated browser test suite drove real Chrome through
+every flow above (99 checks: 52 flow and accessibility checks, 10 QR checks with real
+QR images including a tilted photo, 23 keyboard-only checks, and 14 checks of the logo
+and home page). The axe accessibility
 engine (WCAG 2.0–2.2 A/AA plus best practices) reported 0 issues on every screen tested,
 including the settings panel, high contrast, and Spanish. Every screen was measured at
 320px and 640px wide with the largest text in both languages.
@@ -236,7 +238,7 @@ src/
                     linkInspector, punycode, qr, redact, describe, steps, share,
                     highlight, speech, image
   data/             brands.js (real websites of often-impersonated brands), quiz.js
-  styles/           Design tokens, base, layout, components, screens, settings, phase2
+  styles/           Design tokens, base, layout, components, screens, settings, pages
 ```
 
 While developing, add `?preview=<example id>` (for example `?preview=job`,

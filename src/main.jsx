@@ -14,7 +14,6 @@ import './styles/components.css';
 import './styles/screens.css';
 import './styles/settings.css';
 import './styles/pages.css';
-import './styles/phase2.css';
 
 import App from './App.jsx';
 

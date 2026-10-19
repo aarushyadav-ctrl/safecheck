@@ -126,3 +126,66 @@
     padding-top: var(--space-7);
   }
 }
+
+/* ---------- Header: mode switch ---------- */
+.site-header__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+.mode-switch {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--surface);
+  border: 2px solid var(--line-strong);
+  border-radius: 999px;
+}
+.mode-switch__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  min-width: 44px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
+}
+.mode-switch__btn:hover {
+  background: var(--accent-tint);
+}
+/* The current mode: navy fill plus the pressed state (not color alone: aria-pressed is announced). */
+.mode-switch__btn[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.mode-switch__btn[aria-pressed='true'] .icon {
+  color: var(--gold);
+}
+
+/* Narrow screens or very large text: the mode switch may wrap onto two rows
+   instead of pushing the page sideways. */
+.mode-switch {
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+.mode-switch__btn {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+@media (max-width: 30rem) {
+  .mode-switch {
+    border-radius: var(--radius);
+  }
+  .mode-switch__btn {
+    border-radius: calc(var(--radius) - 3px);
+  }
+  .mode-switch__btn .icon {
+    display: none;
+  }
+}
