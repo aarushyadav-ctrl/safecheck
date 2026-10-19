@@ -7,15 +7,20 @@ import { useApp } from '../context/AppContext.jsx';
 import { useT } from '../i18n/index.js';
 
 export default function Layout({ children }) {
-  const { announcement, demoMode, openSettings } = useApp();
+  const { announcement, demoMode, openSettings, mode, setMode, announce } = useApp();
   const t = useT();
   const navigate = useNavigate();
 
-  // The logo always goes to the home page as a fresh visit, even from the
-  // home page itself, so its entrance animations play again.
+  // The logo always goes to the main home page as a fresh visit, even from
+  // the home page itself, so its entrance animations play again. The main
+  // home page belongs to Simple mode, so the logo switches to Simple.
   function goHome(e) {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // let "open in new tab" work
     e.preventDefault();
+    if (mode !== 'simple') {
+      setMode('simple');
+      if (mode === 'quick') announce(t('mode.switched', { mode: t('mode.simple.name') }));
+    }
     navigate('/', { state: { replay: Date.now() } });
   }
 
