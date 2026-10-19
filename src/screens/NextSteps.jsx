@@ -5,10 +5,11 @@ import Page from '../components/Page.jsx';
 import Icon from '../components/Icon.jsx';
 import ReadAloudButton from '../components/ReadAloudButton.jsx';
 import { useApp } from '../context/AppContext.jsx';
+import { useT } from '../i18n/index.js';
 import { getSteps } from '../lib/steps.js';
 
 // Forward slides in from the right, back slides in from the left.
-const slide = {
+export const slide = {
   enter: (dir) => ({ opacity: 0, x: dir * 36 }),
   center: { opacity: 1, x: 0, transition: { duration: 0.32, ease: [0.22, 1, 0.36, 1] } },
   exit: (dir) => ({ opacity: 0, x: dir * -24, transition: { duration: 0.16 } }),
@@ -17,9 +18,11 @@ const slide = {
 export default function NextSteps() {
   const [params] = useSearchParams();
   const path = params.get('path') === 'clicked' ? 'clicked' : 'main';
-  const { check, resetCheck } = useApp();
+  const { check, resetCheck, mode } = useApp();
+  const t = useT();
   const navigate = useNavigate();
-  const steps = getSteps(check.result, path);
+  const steps = getSteps(check.result, path, t, { isLink: Boolean(check.linkReport) });
+  const resultPath = mode === 'quick' ? '/quick' : '/results';
 
   const [index, setIndex] = useState(0);
   const [done, setDone] = useState(false);
@@ -50,20 +53,17 @@ export default function NextSteps() {
   const step = steps[Math.min(index, steps.length - 1)];
   const isLast = index === steps.length - 1;
   const clicked = path === 'clicked';
+  const count = t('steps.count', { n: index + 1, total: steps.length });
 
   return (
-    <Page title={clicked ? 'If you already tapped a link' : 'What to do now'} className="steps">
-      <h1>{clicked ? 'If you already tapped a link or replied' : 'What should I do now?'}</h1>
-      <p className="lead">
-        {clicked
-          ? "Don't worry. Acting quickly helps a lot. Let's go one step at a time."
-          : "Let's go one step at a time. Take as long as you need."}
-      </p>
+    <Page title={clicked ? t('nextSteps.titleClicked') : t('nextSteps.title')} className="steps">
+      <h1>{clicked ? t('nextSteps.titleClicked') : t('nextSteps.title')}</h1>
+      <p className="lead">{clicked ? t('nextSteps.leadClicked') : t('nextSteps.lead')}</p>
 
       <p className="steps__switch">
         {clicked ? (
           <Link to="/next-steps" className="text-link" onClick={() => (moved.current = true)}>
-            I didn't tap or reply to anything
+            {t('nextSteps.notClicked')}
           </Link>
         ) : (
           <Link
@@ -72,7 +72,7 @@ export default function NextSteps() {
             onClick={() => (moved.current = true)}
           >
             <Icon name="pointer" />
-            I already tapped a link, replied, or shared information
+            {t('nextSteps.switchClicked')}
           </Link>
         )}
       </p>
@@ -102,9 +102,9 @@ export default function NextSteps() {
               <Icon name="check" size="1.75rem" />
             </span>
             <h2 id="done-title" ref={headingRef} tabIndex={-1}>
-              You're all done
+              {t('nextSteps.doneTitle')}
             </h2>
-            <p>You did the right thing by checking first. Here is what you did:</p>
+            <p>{t('nextSteps.doneBody')}</p>
             <ol className="done-list" role="list">
               {steps.map((s) => (
                 <li key={s.title}>
@@ -116,17 +116,17 @@ export default function NextSteps() {
             <div className="button-row">
               <Link to="/ask-family" className="btn btn--primary">
                 <Icon name="users" />
-                Ask someone I trust
+                {t('results.askSomeone')}
               </Link>
               <button
                 type="button"
                 className="btn btn--secondary"
                 onClick={() => {
                   resetCheck();
-                  navigate('/check');
+                  navigate(mode === 'quick' ? '/quick' : '/check');
                 }}
               >
-                Check another message
+                {t('results.checkAnother')}
               </button>
               <button
                 type="button"
@@ -138,7 +138,7 @@ export default function NextSteps() {
                   setIndex(0);
                 }}
               >
-                Go over the steps again
+                {t('nextSteps.again')}
               </button>
             </div>
           </motion.section>
@@ -155,23 +155,23 @@ export default function NextSteps() {
           >
             <h2 id="step-title" ref={headingRef} tabIndex={-1} className="step-card__title">
               <span className="step-card__count">
-                Step {index + 1} of {steps.length}
+                {count}
                 <span className="visually-hidden">:</span>
               </span>{' '}
               {step.title}
             </h2>
             <p className="step-card__body">{step.body}</p>
             <ReadAloudButton
-              label="Read this step to me"
+              label={t('speech.readStep')}
               className="btn--small step-card__read"
-              getText={() => `Step ${index + 1} of ${steps.length}. ${step.title}. ${step.body}`}
+              getText={() => `${count}. ${step.title}. ${step.body}`}
             />
             {step.links?.map((l) => (
               <p key={l.href}>
                 <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-link">
                   {l.label}
                   <Icon name="external" />
-                  <span className="visually-hidden"> (opens in a new tab)</span>
+                  <span className="visually-hidden"> {t('common.newTab')}</span>
                 </a>
               </p>
             ))}
@@ -184,16 +184,16 @@ export default function NextSteps() {
           {index > 0 ? (
             <button type="button" className="btn btn--secondary" onClick={() => go(index - 1)}>
               <Icon name="arrowLeft" />
-              Back
+              {t('common.back')}
             </button>
           ) : (
-            <Link to={check.result ? '/results' : '/'} className="btn btn--secondary">
+            <Link to={check.result ? resultPath : '/'} className="btn btn--secondary">
               <Icon name="arrowLeft" />
-              {check.result ? 'Back to my result' : 'Back to start'}
+              {check.result ? t('common.backToResult') : t('common.backToStart')}
             </Link>
           )}
           <button type="button" className="btn btn--primary" onClick={() => go(index + 1)}>
-            {isLast ? 'Done' : 'Next step'}
+            {isLast ? t('common.done') : t('common.nextStep')}
             <Icon name={isLast ? 'check' : 'arrowRight'} />
           </button>
         </div>

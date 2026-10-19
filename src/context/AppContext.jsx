@@ -1,25 +1,36 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { SAMPLES } from '../../shared/samples.js';
 import { DEMO_RESULTS } from '../../shared/demoResults.js';
+import { inspectLink } from '../lib/linkInspector.js';
 
 const SETTINGS_KEY = 'safecheck-settings';
+const MODE_KEY = 'safecheck-mode';
 
 export const DEFAULT_SETTINGS = {
   textSize: 'standard', // 'standard' | 'large' | 'largest'
   highContrast: false,
   reduceMotion: false,
   readSpeed: 0.9, // speech rate, slightly slower than normal by default
+  language: 'en', // 'en' | 'es'
 };
 
-const EMPTY_CHECK = {
+// One shared "current check" used by both Simple and Quick mode, so switching
+// modes never loses the message or its result.
+export const EMPTY_CHECK = {
+  input: 'message', // 'message' (text and/or screenshot) | 'link' (typed) | 'qr' (link from a QR photo)
   text: '',
   image: null, // { dataUrl, name } once a screenshot is added
+  link: '',
+  linkSource: null, // 'typed' | 'qr'
   claimedSender: '',
   sampleId: null, // set when an example message was loaded
   result: null,
+  linkReport: null, // local link inspection, made in the browser
+  sentText: '', // the text actually sent, after private details were hidden
+  redactions: [], // [{ type }] for each hidden item
 };
 
-// Settings last for this browser session only, as the brief asks.
+// Settings and the chosen mode last for this browser session only.
 function loadSettings() {
   try {
     const saved = JSON.parse(sessionStorage.getItem(SETTINGS_KEY));
@@ -28,9 +39,17 @@ function loadSettings() {
     return DEFAULT_SETTINGS;
   }
 }
+function loadMode() {
+  try {
+    const saved = sessionStorage.getItem(MODE_KEY);
+    return saved === 'simple' || saved === 'quick' ? saved : null;
+  } catch {
+    return null;
+  }
+}
 
-// Development only: open any page with ?preview=bank (or package, grandchild,
-// appointment) to jump straight in with that example already checked.
+// Development only: open any page with ?preview=bank (or any example id)
+// to jump straight in with that example already checked.
 // Removed from the production build.
 function devPreviewCheck() {
   if (!import.meta.env.DEV) return EMPTY_CHECK;
@@ -39,9 +58,14 @@ function devPreviewCheck() {
   if (!sample) return EMPTY_CHECK;
   return {
     ...EMPTY_CHECK,
-    text: sample.text,
-    claimedSender: sample.claimedSender,
+    input: sample.kind === 'link' ? 'link' : 'message',
+    text: sample.text || '',
+    link: sample.link || '',
+    linkSource: sample.link ? 'typed' : null,
+    claimedSender: sample.claimedSender || '',
     sampleId: sample.id,
+    sentText: sample.text || '',
+    linkReport: sample.link ? inspectLink(sample.link) : null,
     result: { ...DEMO_RESULTS[sample.id], demo: true },
   };
 }
@@ -50,6 +74,7 @@ const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
   const [settings, setSettings] = useState(loadSettings);
+  const [mode, setModeState] = useState(loadMode); // null until the person chooses
   const [check, setCheck] = useState(devPreviewCheck);
   // Polite screen-reader messages, e.g. "Example loaded". The count makes
   // repeating the same sentence still get read out.
@@ -76,13 +101,25 @@ export function AppProvider({ children }) {
     root.dataset.textSize = settings.textSize;
     root.dataset.contrast = settings.highContrast ? 'high' : 'normal';
     root.dataset.motion = settings.reduceMotion ? 'reduce' : 'full';
+    // Screen readers use this to pronounce the page in the right language.
+    root.lang = settings.language;
   }, [settings]);
 
   const value = useMemo(
     () => ({
       settings,
       updateSettings: (patch) => setSettings((s) => ({ ...s, ...patch })),
-      resetSettings: () => setSettings(DEFAULT_SETTINGS),
+      // "Reset to normal" keeps the chosen language.
+      resetSettings: () => setSettings((s) => ({ ...DEFAULT_SETTINGS, language: s.language })),
+      mode,
+      setMode: (m) => {
+        setModeState(m);
+        try {
+          sessionStorage.setItem(MODE_KEY, m);
+        } catch {
+          // Storage blocked: the choice still lasts for this page view.
+        }
+      },
       check,
       updateCheck: (patch) => setCheck((c) => ({ ...c, ...patch })),
       resetCheck: () => setCheck(EMPTY_CHECK),
@@ -94,7 +131,7 @@ export function AppProvider({ children }) {
       openSettings: () => setSettingsOpen(true),
       closeSettings: () => setSettingsOpen(false),
     }),
-    [settings, check, announcement, demoMode, settingsOpen],
+    [settings, mode, check, announcement, demoMode, settingsOpen],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

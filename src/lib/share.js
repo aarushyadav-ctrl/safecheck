@@ -1,8 +1,4 @@
-const VERDICT_WORDS = {
-  scam: 'Likely a scam',
-  caution: 'Be careful',
-  safe: 'Looks safe',
-};
+import { summaryText, verdictLabel, warningSigns } from './describe.js';
 
 // Changes web addresses a little (example.com -> example[.]com) so nobody
 // taps a scam link by accident when the note is shared.
@@ -16,31 +12,31 @@ export function defangLinks(text) {
 const MAX_MESSAGE = 600;
 
 /** The short note a person can send to someone they trust. */
-export function buildShareNote({ result, text, claimedSender }) {
+export function buildShareNote({ result, text, claimedSender, linkReport, link }, t) {
   const message = (text || result.extractedText || '').trim();
   const shortMessage =
     message.length > MAX_MESSAGE ? `${message.slice(0, MAX_MESSAGE).trimEnd()}…` : message;
 
   const lines = [
-    'Hi, can you help me check a message I got?',
+    t('share.note.hello'),
     '',
-    `SafeCheck says: ${verdictLabel(result.verdict)}.`,
-    result.summary,
+    t('share.note.says', { verdict: verdictLabel(result, t) }),
+    summaryText(result, t),
   ];
 
-  if (result.redFlags?.length) {
-    lines.push('', 'Warning signs it found:');
-    result.redFlags.forEach((f) => {
-      lines.push(f.quote ? `- "${defangLinks(f.quote)}": ${f.explanation}` : `- ${f.explanation}`);
-    });
+  const signs = warningSigns(result, linkReport, t);
+  if (signs.length) {
+    lines.push('', t('share.note.signs'));
+    signs.forEach((s) => lines.push(`- ${defangLinks(s)}`));
   }
-  if (claimedSender?.trim()) lines.push('', `It says it is from: ${claimedSender.trim()}`);
-  if (shortMessage) lines.push('', 'The message:', `"${defangLinks(shortMessage)}"`);
-  lines.push('', 'Could you call me when you see this? Thank you!');
+  if (claimedSender?.trim()) lines.push('', t('share.note.from', { sender: claimedSender.trim() }));
+  if (linkReport) {
+    lines.push('', t('share.note.link'), defangLinks(link || linkReport.href));
+    lines.push(t('share.note.linkGoesTo', { domain: defangLinks(linkReport.domain) }));
+  } else if (shortMessage) {
+    lines.push('', t('share.note.message'), `"${defangLinks(shortMessage)}"`);
+  }
+  lines.push('', t('share.note.callMe'));
 
   return lines.join('\n');
-}
-
-function verdictLabel(verdict) {
-  return VERDICT_WORDS[verdict] || VERDICT_WORDS.caution;
 }

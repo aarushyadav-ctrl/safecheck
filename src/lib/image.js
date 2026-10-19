@@ -1,21 +1,30 @@
 const MAX_FILE_BYTES = 15 * 1024 * 1024;
 const MAX_SIDE = 1600; // big enough to read text, small enough to send quickly
 
+/** An error with a code the screen turns into plain words (image.errors.<code>). */
+export class ImageError extends Error {
+  constructor(code) {
+    super(code);
+    this.code = code;
+  }
+}
+
 /**
  * Turns a picked or dropped image file into a smaller JPEG data URL.
- * Throws an Error with a plain-language message if the file can't be used.
+ * Throws an ImageError if the file can't be used.
  */
 export async function prepareScreenshot(file) {
-  if (!file || !file.type.startsWith('image/')) {
-    throw new Error('That file is not a picture. Please choose a screenshot or photo.');
-  }
-  if (file.size > MAX_FILE_BYTES) {
-    throw new Error('That picture is too large. Please choose one under 15 MB.');
-  }
+  if (!file || !file.type.startsWith('image/')) throw new ImageError('notImage');
+  if (file.size > MAX_FILE_BYTES) throw new ImageError('tooBig');
 
   const url = URL.createObjectURL(file);
   try {
-    const img = await loadImage(url);
+    const img = await new Promise((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new ImageError('cantOpen'));
+      el.src = url;
+    });
     const scale = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(img.naturalWidth * scale);
@@ -26,19 +35,9 @@ export async function prepareScreenshot(file) {
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     return {
       dataUrl: canvas.toDataURL('image/jpeg', 0.86),
-      name: file.name || 'Pasted picture',
+      name: file.name || '',
     };
   } finally {
     URL.revokeObjectURL(url);
   }
-}
-
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () =>
-      reject(new Error("We couldn't open that picture. Please try a different one."));
-    img.src = src;
-  });
 }

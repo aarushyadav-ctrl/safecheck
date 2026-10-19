@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom';
 import Page from '../components/Page.jsx';
+import { useT } from '../i18n/index.js';
 
 export default function NotFound() {
+  const t = useT();
   return (
-    <Page title="Page not found">
-      <h1>We can't find that page</h1>
-      <p>The link may be old or typed wrong.</p>
+    <Page title={t('notFound.title')}>
+      <h1>{t('notFound.title')}</h1>
+      <p>{t('notFound.body')}</p>
       <Link className="btn btn--primary" to="/">
-        Go to the start
+        {t('common.backToStart')}
       </Link>
     </Page>
   );

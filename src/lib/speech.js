@@ -4,13 +4,17 @@ import { useApp } from '../context/AppContext.jsx';
 export const speechSupported =
   typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
 
-// Prefer a clear, natural-sounding US English voice when the device has one.
-function pickVoice() {
+const SPEECH_LANG = { en: 'en-US', es: 'es-US' };
+
+// Prefer a clear, natural-sounding voice in the chosen language when the device has one.
+function pickVoice(language) {
   const voices = window.speechSynthesis.getVoices();
+  const exact = SPEECH_LANG[language] || 'en-US';
+  const prefix = exact.slice(0, 2);
   return (
-    voices.find((v) => v.lang === 'en-US' && /natural|google|samantha|aria|jenny/i.test(v.name)) ||
-    voices.find((v) => v.lang === 'en-US') ||
-    voices.find((v) => v.lang?.startsWith('en')) ||
+    voices.find((v) => v.lang === exact && /natural|google|samantha|aria|jenny|paulina|sabina/i.test(v.name)) ||
+    voices.find((v) => v.lang === exact) ||
+    voices.find((v) => v.lang?.startsWith(prefix)) ||
     null
   );
 }
@@ -36,7 +40,7 @@ export function useSpeech() {
       if (!speechSupported || !text) return;
       window.speechSynthesis.cancel();
       const id = ++runId.current;
-      const voice = pickVoice();
+      const voice = pickVoice(settings.language);
       // Some browsers stop long speech after about 15 seconds,
       // so read one sentence at a time.
       const sentences = (text.match(/[^.!?\n]+[.!?]*/g) || [text])
@@ -46,7 +50,7 @@ export function useSpeech() {
       setSpeaking(true);
       sentences.forEach((sentence, i) => {
         const u = new SpeechSynthesisUtterance(sentence);
-        u.lang = 'en-US';
+        u.lang = SPEECH_LANG[settings.language] || 'en-US';
         u.rate = settings.readSpeed;
         if (voice) u.voice = voice;
         if (i === sentences.length - 1) {
@@ -57,7 +61,7 @@ export function useSpeech() {
         window.speechSynthesis.speak(u);
       });
     },
-    [settings.readSpeed],
+    [settings.readSpeed, settings.language],
   );
 
   useEffect(() => stop, [stop]);

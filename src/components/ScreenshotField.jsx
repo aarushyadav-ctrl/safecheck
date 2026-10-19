@@ -2,14 +2,16 @@ import { useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import Icon from './Icon.jsx';
 import { useApp } from '../context/AppContext.jsx';
+import { useT } from '../i18n/index.js';
 import { prepareScreenshot } from '../lib/image.js';
 
 /**
  * Screenshot picker with preview. Drag-and-drop works on desktop, but the
  * "Choose a screenshot" button always works too (keyboard, touch, mouse).
  */
-export default function ScreenshotField({ image, onChange }) {
+export default function ScreenshotField({ image, onChange, compact = false }) {
   const { announce } = useApp();
+  const t = useT();
   const inputRef = useRef(null);
   const chooseRef = useRef(null);
   const replaceRef = useRef(null);
@@ -22,13 +24,12 @@ export default function ScreenshotField({ image, onChange }) {
     setError('');
     setBusy(true);
     try {
-      const prepared = await prepareScreenshot(file);
-      onChange(prepared);
-      announce('Screenshot added.');
+      onChange(await prepareScreenshot(file));
+      announce(t('screenshot.added'));
       // The choose button is replaced by the preview, so move focus onto it.
       setTimeout(() => replaceRef.current?.focus(), 200);
     } catch (err) {
-      setError(err.message);
+      setError(t(`image.errors.${err.code || 'cantOpen'}`));
     } finally {
       setBusy(false);
     }
@@ -37,24 +38,18 @@ export default function ScreenshotField({ image, onChange }) {
   function remove() {
     onChange(null);
     setError('');
-    announce('Screenshot removed.');
+    announce(t('screenshot.removed'));
     // The preview disappears, so put focus somewhere sensible.
     requestAnimationFrame(() => chooseRef.current?.focus());
-  }
-
-  function onDrop(e) {
-    e.preventDefault();
-    setDragging(false);
-    addFile(e.dataTransfer.files?.[0]);
   }
 
   return (
     <div className="field" role="group" aria-labelledby="shot-label">
       <span className="field__label" id="shot-label">
-        Screenshot <span className="field__optional">(optional if you pasted the words)</span>
+        {t('screenshot.label')} <span className="field__optional">{t('screenshot.optional')}</span>
       </span>
       <p id="shot-hint" className="field__hint">
-        A picture of the message from your phone or computer.
+        {t('screenshot.hint')}
       </p>
 
       <input
@@ -71,13 +66,17 @@ export default function ScreenshotField({ image, onChange }) {
       />
 
       <div
-        className={`dropzone${dragging ? ' is-dragging' : ''}${image ? ' has-image' : ''}`}
+        className={`dropzone${compact ? ' dropzone--compact' : ''}${dragging ? ' is-dragging' : ''}${image ? ' has-image' : ''}`}
         onDragOver={(e) => {
           e.preventDefault();
           setDragging(true);
         }}
         onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          addFile(e.dataTransfer.files?.[0]);
+        }}
       >
         <AnimatePresence mode="wait" initial={false}>
           {image ? (
@@ -88,22 +87,22 @@ export default function ScreenshotField({ image, onChange }) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.12 } }}
             >
-              <img src={image.dataUrl} alt="Your screenshot" className="shot-preview__img" />
-              <figcaption className="shot-preview__name">{image.name}</figcaption>
+              <img src={image.dataUrl} alt={t('screenshot.previewAlt')} className="shot-preview__img" />
+              {image.name && <figcaption className="shot-preview__name">{image.name}</figcaption>}
               <div className="shot-preview__actions">
                 <button
-                  type="button"
                   ref={replaceRef}
+                  type="button"
                   className="btn btn--secondary btn--small"
                   onClick={() => inputRef.current?.click()}
                   disabled={busy}
                 >
                   <Icon name="refresh" />
-                  Replace screenshot
+                  {t('screenshot.replace')}
                 </button>
                 <button type="button" className="btn btn--quiet btn--small" onClick={remove}>
                   <Icon name="x" />
-                  Remove screenshot
+                  {t('screenshot.remove')}
                 </button>
               </div>
             </motion.figure>
@@ -115,23 +114,28 @@ export default function ScreenshotField({ image, onChange }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, transition: { duration: 0.12 } }}
             >
-              <Icon name="upload" size="2rem" className="dropzone__icon" />
+              {!compact && <Icon name="upload" size="2rem" className="dropzone__icon" />}
               <button
                 ref={chooseRef}
                 type="button"
                 className="btn btn--secondary"
                 onClick={() => inputRef.current?.click()}
-                aria-describedby="shot-hint"
+                aria-describedby="shot-hint shot-privacy"
                 disabled={busy}
               >
                 <Icon name="image" />
-                {busy ? 'Adding screenshot…' : 'Choose a screenshot'}
+                {busy ? t('screenshot.adding') : t('screenshot.choose')}
               </button>
-              <p className="dropzone__drag-hint">or drag a picture here</p>
+              <p className="dropzone__drag-hint">{t('screenshot.drag')}</p>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
+
+      <p id="shot-privacy" className="field__note">
+        <Icon name="lock" />
+        <span>{t('screenshot.privacy')}</span>
+      </p>
 
       {error && (
         <p className="field__error" role="alert">

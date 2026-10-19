@@ -1,16 +1,19 @@
 import { Link, NavLink } from 'react-router-dom';
 import Logo from './Logo.jsx';
 import Icon from './Icon.jsx';
+import ModeSwitch from './ModeSwitch.jsx';
 import SettingsDialog from './SettingsDialog.jsx';
 import { useApp } from '../context/AppContext.jsx';
+import { useT } from '../i18n/index.js';
 
 export default function Layout({ children }) {
   const { announcement, demoMode, openSettings } = useApp();
+  const t = useT();
 
   return (
     <div className="shell">
       <a className="skip-link" href="#main">
-        Skip to main content
+        {t('layout.skip')}
       </a>
 
       <header className="site-header">
@@ -20,20 +23,22 @@ export default function Layout({ children }) {
             <span className="brand__name">SafeCheck</span>
           </Link>
 
-          <nav aria-label="Main" className="site-nav">
-            <NavLink to="/how-it-works" className="site-nav__link">
-              How it works
-            </NavLink>
-            <button type="button" className="site-nav__link" onClick={openSettings}>
-              <Icon name="sliders" />
-              Settings
-            </button>
-          </nav>
+          <div className="site-header__tools">
+            <ModeSwitch />
+            <nav aria-label={t('layout.navLabel')} className="site-nav">
+              <NavLink to="/how-it-works" className="site-nav__link">
+                {t('layout.howItWorks')}
+              </NavLink>
+              <button type="button" className="site-nav__link" onClick={openSettings}>
+                <Icon name="sliders" />
+                {t('layout.settings')}
+              </button>
+            </nav>
+          </div>
         </div>
         {demoMode && (
           <p className="demo-banner">
-            <strong>Demo mode.</strong> Live checking is off, so the example messages show
-            pre-written results.
+            <strong>{t('layout.demoTitle')}</strong> {t('layout.demoBody')}
           </p>
         )}
       </header>
@@ -43,8 +48,8 @@ export default function Layout({ children }) {
       </main>
 
       <footer className="site-footer">
-        <p>SafeCheck does not save your messages.</p>
-        <p>It can make mistakes. If you are unsure, ask someone you trust.</p>
+        <p>{t('layout.footerPrivacy')}</p>
+        <p>{t('layout.footerMistakes')}</p>
       </footer>
 
       <SettingsDialog />

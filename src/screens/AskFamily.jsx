@@ -1,51 +1,50 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Page from '../components/Page.jsx';
 import Icon from '../components/Icon.jsx';
+import CopyButton from '../components/CopyButton.jsx';
 import { useApp } from '../context/AppContext.jsx';
+import { useT } from '../i18n/index.js';
 import { buildShareNote } from '../lib/share.js';
 
 const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
-const SUBJECT = 'Can you help me check a message?';
 
 export default function AskFamily() {
-  const { check, announce } = useApp();
+  const { check, mode } = useApp();
+  const t = useT();
   const result = check.result;
   const [note, setNote] = useState(() =>
-    result ? buildShareNote({ result, text: check.text, claimedSender: check.claimedSender }) : '',
+    result
+      ? buildShareNote(
+          {
+            result,
+            text: check.sentText || check.text,
+            claimedSender: check.claimedSender,
+            linkReport: check.linkReport,
+            link: check.link,
+          },
+          t,
+        )
+      : '',
   );
-  const [copied, setCopied] = useState(false);
-  const noteRef = useRef(null);
+  const resultPath = mode === 'quick' ? '/quick' : '/results';
 
   if (!result) {
     return (
-      <Page title="Ask someone you trust">
-        <h1>Ask someone you trust</h1>
-        <p>Check a message first. Then we'll write a short note you can send to family or a friend.</p>
-        <Link className="btn btn--primary" to="/check">
-          Check a message
+      <Page title={t('ask.title')}>
+        <h1>{t('ask.title')}</h1>
+        <p>{t('ask.noResult')}</p>
+        <Link className="btn btn--primary" to={mode === 'quick' ? '/quick' : '/check'}>
+          {t('results.noneAction')}
           <Icon name="arrowRight" />
         </Link>
       </Page>
     );
   }
 
-  async function copyNote() {
-    try {
-      await navigator.clipboard.writeText(note);
-    } catch {
-      // Older browsers: select the text and use the old copy command.
-      noteRef.current?.select();
-      document.execCommand('copy');
-    }
-    setCopied(true);
-    announce('Note copied. You can paste it into a text message or email.');
-    setTimeout(() => setCopied(false), 4000);
-  }
-
   async function shareNote() {
     try {
-      await navigator.share({ title: SUBJECT, text: note });
+      await navigator.share({ title: t('ask.subject'), text: note });
     } catch {
       // The person closed the share sheet. Nothing to do.
     }
@@ -54,24 +53,19 @@ export default function AskFamily() {
   const body = encodeURIComponent(note);
 
   return (
-    <Page title="Ask someone you trust" className="ask">
-      <h1>Ask someone you trust</h1>
-      <p className="lead">
-        It's always fine to get a second opinion. We wrote a short note for a family member or
-        friend. You can change the words first.
-      </p>
+    <Page title={t('ask.title')} className="ask">
+      <h1>{t('ask.title')}</h1>
+      <p className="lead">{t('ask.lead')}</p>
 
       <div className="field">
         <label htmlFor="share-note" className="field__label">
-          Your note
+          {t('ask.noteLabel')}
         </label>
         <p id="share-note-hint" className="field__hint">
-          Web addresses are changed a little, like example[.]com, so nobody taps a scam link by
-          accident.
+          {t('ask.noteHint')}
         </p>
         <textarea
           id="share-note"
-          ref={noteRef}
           className="field__input share-note"
           rows={12}
           value={note}
@@ -80,51 +74,49 @@ export default function AskFamily() {
         />
       </div>
 
-      <h2 className="ask__how">How do you want to send it?</h2>
+      <h2 className="ask__how">{t('ask.how')}</h2>
       <ul className="share-options" role="list">
         {canShare && (
           <li>
             <button type="button" className="btn btn--primary" onClick={shareNote}>
               <Icon name="share" />
-              Share
+              {t('ask.share')}
             </button>
           </li>
         )}
         <li>
           <a className="btn btn--secondary" href={`sms:?&body=${body}`}>
             <Icon name="message" />
-            Send as a text message
+            {t('ask.sms')}
           </a>
         </li>
         <li>
           <a
             className="btn btn--secondary"
-            href={`mailto:?subject=${encodeURIComponent(SUBJECT)}&body=${body}`}
+            href={`mailto:?subject=${encodeURIComponent(t('ask.subject'))}&body=${body}`}
           >
             <Icon name="mail" />
-            Send as an email
+            {t('ask.email')}
           </a>
         </li>
         <li>
-          <button
-            type="button"
+          <CopyButton
             className={`btn ${canShare ? 'btn--secondary' : 'btn--primary'}`}
-            onClick={copyNote}
-          >
-            <Icon name={copied ? 'check' : 'copy'} />
-            {copied ? 'Copied' : 'Copy the note'}
-          </button>
+            label={t('ask.copy')}
+            copiedMessage={t('ask.copied')}
+            getText={() => note}
+          />
         </li>
       </ul>
 
       <p className="ask__call">
         <Icon name="phone" />
-        <span>You can also just call them and read them the message.</span>
+        <span>{t('ask.call')}</span>
       </p>
 
-      <Link to="/results" className="text-link">
+      <Link to={resultPath} className="text-link">
         <Icon name="arrowLeft" />
-        Back to my result
+        {t('common.backToResult')}
       </Link>
     </Page>
   );
