@@ -18,6 +18,7 @@ body {
   line-height: 1.6;
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word; /* very long words wrap instead of pushing the page sideways */
 }
 
 h1,

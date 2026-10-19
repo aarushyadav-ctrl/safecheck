@@ -544,3 +544,20 @@
     gap: var(--space-2);
   }
 }
+
+/* When a start card is narrow (small phone, big text, or zoomed in),
+   put the icon above the words instead of squeezing them. */
+.start-options li {
+  container-type: inline-size;
+}
+@container (max-width: 24rem) {
+  .start-option {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+  .start-option__arrow {
+    display: none;
+  }
+}

@@ -36,17 +36,15 @@ export default function Check() {
   const textRef = useRef(null);
   const headingRef = useRef(null);
   const abortRef = useRef(null);
-  const firstRender = useRef(true);
+  const shownStatus = useRef(status);
 
   // Stop any check that is still running if the person leaves this page.
   useEffect(() => () => abortRef.current?.abort(), []);
 
   // When the view changes (form, checking, problem), move focus to match.
   useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false;
-      return;
-    }
+    if (shownStatus.current === status) return;
+    shownStatus.current = status;
     const target = status === 'idle' ? textRef.current : headingRef.current;
     setTimeout(() => target?.focus(), 200);
   }, [status]);
