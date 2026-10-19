@@ -1,49 +1,57 @@
 /*
   SafeCheck design tokens
   -----------------------
-  Palette: cool paper, deep ink, one steady blue, and a highlighter yellow
-  that marks red flags (the way someone would mark a suspicious letter).
-  Every text pair here meets WCAG AA (4.5:1) or better.
+  Palette: deep navy for trust, warm gold for the things that matter
+  (the main button, the highlighter that marks warning signs, progress).
+  Every text pair here meets WCAG AA (4.5:1) or better. Pure gold is only
+  used as a fill behind navy text, never as text on white.
 */
 :root {
   /* Color */
-  --paper: #f4f7f6;
+  --paper: #f7f7f4;
   --surface: #ffffff;
-  --ink: #14211e;
-  --ink-soft: #43534e;
-  --line: #d6dfdc; /* decorative dividers only */
-  --line-strong: #64746f; /* borders of inputs and controls (3:1+) */
+  --ink: #0f1b2d;
+  --ink-soft: #4a5568;
+  --line: #e2e2da; /* decorative dividers only */
+  --line-strong: #6b7280; /* borders of inputs and controls (3:1+) */
 
-  --accent: #1d4e89;
-  --accent-hover: #163d6c;
-  --accent-tint: #e6eef7;
+  --accent: #14305a; /* navy */
+  --accent-hover: #0b2140;
+  --accent-tint: #e9eef6;
   --on-accent: #ffffff;
 
-  --marker: #ffe38a;
-  --marker-ink: #14211e;
+  --gold: #e8b931; /* fills only */
+  --gold-hover: #d9a91f;
+  --on-gold: #14305a;
+  --gold-deep: #7d5e00; /* gold-colored text */
+  --gold-tint: #fbf3dc;
+  --gold-line: #c99a1e; /* decorative rules */
+
+  --marker: #f3d98a;
+  --marker-ink: #0f1b2d;
 
   --scam: #a3262c;
   --scam-tint: #fbebeb;
-  --caution: #7a5200;
-  --caution-tint: #fff3d6;
+  --caution: #8a4b00;
+  --caution-tint: #fff1dc;
   --safe: #1a6a3d;
   --safe-tint: #e4f3ea;
 
-  --focus: #1d4e89;
+  --focus: #14305a;
   --focus-gap: #ffffff;
 
-  /* Type */
-  --font-body: 'Atkinson Hyperlegible Next', 'Segoe UI', system-ui, sans-serif;
-  --font-display: 'Literata Variable', Georgia, 'Times New Roman', serif;
+  /* Type: Montserrat everywhere, bold for headings and controls. */
+  --font-body: 'Montserrat', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Montserrat', 'Segoe UI', system-ui, sans-serif;
   --font-message: 'Atkinson Hyperlegible Mono', ui-monospace, Consolas, monospace;
 
   /* Sizes scale with the root font size, which the text-size setting changes. */
   --step--1: 0.889rem;
   --step-0: 1rem;
   --step-1: 1.2rem;
-  --step-2: 1.5rem;
-  --step-3: clamp(1.75rem, 1.4rem + 1.6vw, 2.4rem);
-  --step-4: clamp(2.1rem, 1.5rem + 2.8vw, 3.3rem);
+  --step-2: 1.45rem;
+  --step-3: clamp(1.6rem, 1.3rem + 1.4vw, 2.2rem);
+  --step-4: clamp(1.9rem, 1.4rem + 2.5vw, 3rem);
 
   /* Space (8px rhythm at the standard size) */
   --space-1: 0.25rem;
@@ -60,7 +68,7 @@
   --radius-lg: 24px;
   --measure: 40rem;
 
-  --shadow-1: 0 1px 2px rgb(20 33 30 / 0.06), 0 4px 16px rgb(20 33 30 / 0.06);
+  --shadow-1: 0 1px 2px rgb(15 27 45 / 0.06), 0 6px 20px rgb(15 27 45 / 0.06);
 
   /* Motion */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -92,13 +100,19 @@
   --ink-soft: #000000;
   --line: #000000;
   --line-strong: #000000;
-  --accent: #002f6c;
-  --accent-hover: #001a3d;
+  --accent: #001a3d;
+  --accent-hover: #000000;
   --accent-tint: #ffffff;
+  --gold: #ffd21f;
+  --gold-hover: #ffc400;
+  --on-gold: #000000;
+  --gold-deep: #000000;
+  --gold-tint: #ffffff;
+  --gold-line: #000000;
   --marker: #ffe000;
   --scam: #7a0000;
   --scam-tint: #ffffff;
-  --caution: #4d3300;
+  --caution: #4d2a00;
   --caution-tint: #ffffff;
   --safe: #00461f;
   --safe-tint: #ffffff;

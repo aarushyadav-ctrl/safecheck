@@ -16,7 +16,7 @@ export default function Logo({ size = 36 }) {
       <path
         d="m10.6 14.2 2.4 2.4 4.4-4.6"
         fill="none"
-        stroke="var(--marker)"
+        stroke="var(--gold)"
         strokeWidth="2.4"
         strokeLinecap="round"
         strokeLinejoin="round"
