@@ -1,4 +1,4 @@
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import Logo from './Logo.jsx';
 import Icon from './Icon.jsx';
 import ModeSwitch from './ModeSwitch.jsx';
@@ -9,6 +9,15 @@ import { useT } from '../i18n/index.js';
 export default function Layout({ children }) {
   const { announcement, demoMode, openSettings } = useApp();
   const t = useT();
+  const navigate = useNavigate();
+
+  // The logo always goes to the home page as a fresh visit, even from the
+  // home page itself, so its entrance animations play again.
+  function goHome(e) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // let "open in new tab" work
+    e.preventDefault();
+    navigate('/', { state: { replay: Date.now() } });
+  }
 
   return (
     <div className="shell">
@@ -18,7 +27,7 @@ export default function Layout({ children }) {
 
       <header className="site-header">
         <div className="site-header__inner">
-          <Link to="/" className="brand">
+          <Link to="/" className="brand" onClick={goHome}>
             <Logo />
             <span className="brand__name">SafeCheck</span>
           </Link>

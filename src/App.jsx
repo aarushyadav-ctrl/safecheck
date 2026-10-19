@@ -27,7 +27,11 @@ function AnimatedRoutes() {
     // "user" follows the device's reduce-motion setting; our own toggle forces it on.
     <MotionConfig reducedMotion={settings.reduceMotion ? 'always' : 'user'}>
       <AnimatePresence mode="wait" initial={false}>
-        <Routes location={location} key={location.pathname}>
+        {/* A "replay" visit (from the logo) counts as a new page, so it animates in again. */}
+        <Routes
+          location={location}
+          key={location.state?.replay ? `${location.pathname}#${location.state.replay}` : location.pathname}
+        >
           <Route path="/" element={<Home />} />
           <Route path="/quick" element={<Quick />} />
           <Route path="/check" element={<Check />} />
