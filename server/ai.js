@@ -75,7 +75,7 @@ function buildUserPrompt({ text, claimedSender, hasImage }) {
  *         rate_limited, too_large, timeout, provider_down, bad_response
  */
 export async function analyzeMessage({ text = '', imageBase64 = null, claimedSender = '' }) {
-  const { AI_API_KEY, AI_BASE_URL, AI_MODEL, AI_VISION_MODEL } = process.env;
+  const { AI_API_KEY, AI_BASE_URL, AI_MODEL, AI_VISION_MODEL, AI_REASONING_EFFORT } = process.env;
   if (!AI_API_KEY || !AI_BASE_URL || !AI_MODEL) throw new AIError('not_configured');
   if (imageBase64 && !AI_VISION_MODEL) throw new AIError('no_vision');
 
@@ -91,13 +91,15 @@ export async function analyzeMessage({ text = '', imageBase64 = null, claimedSen
   const body = {
     model,
     temperature: 0.2,
-    max_tokens: 1500,
+    max_tokens: 3000, // room for "reasoning" models to think before the JSON
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: userContent },
     ],
     response_format: { type: 'json_object' },
   };
+  // Only sent when set, because not every model accepts it.
+  if (AI_REASONING_EFFORT) body.reasoning_effort = AI_REASONING_EFFORT;
 
   let data;
   try {
@@ -106,6 +108,7 @@ export async function analyzeMessage({ text = '', imageBase64 = null, claimedSen
     // Some models don't support JSON mode. Try once more without it.
     if (err.code === 'bad_request') {
       delete body.response_format;
+      delete body.reasoning_effort;
       data = await callProvider(body);
     } else {
       throw err;

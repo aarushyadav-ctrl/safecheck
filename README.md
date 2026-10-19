@@ -42,7 +42,9 @@ the same kind of API, so you only change settings, not code.
    ([Groq models](https://console.groq.com/docs/models),
    [Groq vision models](https://console.groq.com/docs/vision),
    [xAI models](https://docs.x.ai/docs/models)) and update `AI_MODEL` (for text) and
-   `AI_VISION_MODEL` (for screenshots).
+   `AI_VISION_MODEL` (for screenshots). Your key may not have every model; this lists
+   the ones it can use:
+   `curl https://api.groq.com/openai/v1/models -H "Authorization: Bearer YOUR_KEY"`
 5. **Restart** `npm run dev`. The terminal says `Live checking on`, and the demo banner
    disappears.
 
