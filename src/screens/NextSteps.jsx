@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import Page from '../components/Page.jsx';
 import Icon from '../components/Icon.jsx';
+import ReadAloudButton from '../components/ReadAloudButton.jsx';
 import { useApp } from '../context/AppContext.jsx';
 import { getSteps } from '../lib/steps.js';
 
@@ -160,6 +161,11 @@ export default function NextSteps() {
               {step.title}
             </h2>
             <p className="step-card__body">{step.body}</p>
+            <ReadAloudButton
+              label="Read this step to me"
+              className="btn--small step-card__read"
+              getText={() => `Step ${index + 1} of ${steps.length}. ${step.title}. ${step.body}`}
+            />
             {step.links?.map((l) => (
               <p key={l.href}>
                 <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-link">

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import Page from '../components/Page.jsx';
 import Icon from '../components/Icon.jsx';
+import { useApp } from '../context/AppContext.jsx';
 
 const rise = {
   hidden: { opacity: 0, y: 16 },
@@ -28,6 +29,7 @@ const START_OPTIONS = [
 ];
 
 export default function Home() {
+  const { openSettings } = useApp();
   return (
     <Page title="Check a message" className="home">
       <h1 className="home__title">
@@ -68,6 +70,10 @@ export default function Home() {
           <Icon name="book" />
           How it works
         </Link>
+        <button type="button" className="text-link text-link--button" onClick={openSettings}>
+          <Icon name="sliders" />
+          Text size and display settings
+        </button>
       </nav>
     </Page>
   );

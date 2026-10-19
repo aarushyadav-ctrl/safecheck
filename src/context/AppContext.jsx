@@ -56,6 +56,8 @@ export function AppProvider({ children }) {
   const [announcement, setAnnouncement] = useState({ text: '', n: 0 });
   // Demo mode: no API key on the server (or the server can't be reached).
   const [demoMode, setDemoMode] = useState(false);
+  // The settings panel opens over any screen, so nothing typed is ever lost.
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/health')
@@ -88,8 +90,11 @@ export function AppProvider({ children }) {
       announce: (text) => setAnnouncement((a) => ({ text, n: a.n + 1 })),
       demoMode,
       setDemoMode,
+      settingsOpen,
+      openSettings: () => setSettingsOpen(true),
+      closeSettings: () => setSettingsOpen(false),
     }),
-    [settings, check, announcement, demoMode],
+    [settings, check, announcement, demoMode, settingsOpen],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

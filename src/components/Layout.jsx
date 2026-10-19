@@ -1,9 +1,11 @@
 import { Link, NavLink } from 'react-router-dom';
 import Logo from './Logo.jsx';
+import Icon from './Icon.jsx';
+import SettingsDialog from './SettingsDialog.jsx';
 import { useApp } from '../context/AppContext.jsx';
 
 export default function Layout({ children }) {
-  const { announcement, demoMode } = useApp();
+  const { announcement, demoMode, openSettings } = useApp();
 
   return (
     <div className="shell">
@@ -22,6 +24,10 @@ export default function Layout({ children }) {
             <NavLink to="/how-it-works" className="site-nav__link">
               How it works
             </NavLink>
+            <button type="button" className="site-nav__link" onClick={openSettings}>
+              <Icon name="sliders" />
+              Settings
+            </button>
           </nav>
         </div>
         {demoMode && (
@@ -40,6 +46,8 @@ export default function Layout({ children }) {
         <p>SafeCheck does not save your messages.</p>
         <p>It can make mistakes. If you are unsure, ask someone you trust.</p>
       </footer>
+
+      <SettingsDialog />
 
       <div className="visually-hidden" role="status" aria-live="polite">
         <span key={announcement.n}>{announcement.text}</span>

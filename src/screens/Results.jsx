@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import Page from '../components/Page.jsx';
 import Icon from '../components/Icon.jsx';
+import ReadAloudButton from '../components/ReadAloudButton.jsx';
 import { useApp } from '../context/AppContext.jsx';
 import { buildHighlights } from '../lib/highlight.js';
 
@@ -81,6 +82,8 @@ function ResultView({ result, text }) {
           that feeling.
         </p>
       </div>
+
+      <ReadAloudButton className="results__read" getText={() => readAloudText(result, verdict, items)} />
 
       {result.demo && (
         <p className="demo-note">
@@ -179,6 +182,19 @@ function ResultView({ result, text }) {
       </nav>
     </Page>
   );
+}
+
+// What "Read this to me" says: the answer, why, how sure, then each warning sign.
+function readAloudText(result, verdict, items) {
+  const parts = [`Our answer: ${verdict.label}.`, result.summary, confidenceNote(result)];
+  if (items.length) {
+    parts.push(`We found ${items.length} warning sign${items.length > 1 ? 's' : ''}.`);
+    items.forEach((item) => parts.push(`Warning sign ${item.num}. ${item.explanation}`));
+  } else {
+    parts.push("We didn't find any warning signs.");
+  }
+  parts.push('SafeCheck can make mistakes. If something feels wrong, trust that feeling.');
+  return parts.join(' ');
 }
 
 function splitLastWord(text) {
