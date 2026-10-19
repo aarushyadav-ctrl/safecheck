@@ -3,7 +3,7 @@ import Logo from './Logo.jsx';
 import { useApp } from '../context/AppContext.jsx';
 
 export default function Layout({ children }) {
-  const { announcement } = useApp();
+  const { announcement, demoMode } = useApp();
 
   return (
     <div className="shell">
@@ -24,6 +24,12 @@ export default function Layout({ children }) {
             </NavLink>
           </nav>
         </div>
+        {demoMode && (
+          <p className="demo-banner">
+            <strong>Demo mode.</strong> Live checking is off, so the example messages show
+            pre-written results.
+          </p>
+        )}
       </header>
 
       <main id="main" tabIndex={-1} className="site-main">

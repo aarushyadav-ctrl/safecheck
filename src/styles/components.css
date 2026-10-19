@@ -230,3 +230,7 @@
 :root[data-contrast='high'] .flag {
   border-bottom-width: 3px;
 }
+
+.nowrap {
+  white-space: nowrap;
+}

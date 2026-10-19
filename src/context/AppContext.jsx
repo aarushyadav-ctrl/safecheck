@@ -1,4 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { SAMPLES } from '../../shared/samples.js';
+import { DEMO_RESULTS } from '../../shared/demoResults.js';
 
 const SETTINGS_KEY = 'safecheck-settings';
 
@@ -27,14 +29,40 @@ function loadSettings() {
   }
 }
 
+// Development only: open any page with ?preview=bank (or package, grandchild,
+// appointment) to jump straight in with that example already checked.
+// Removed from the production build.
+function devPreviewCheck() {
+  if (!import.meta.env.DEV) return EMPTY_CHECK;
+  const id = new URLSearchParams(window.location.search).get('preview');
+  const sample = SAMPLES.find((s) => s.id === id);
+  if (!sample) return EMPTY_CHECK;
+  return {
+    ...EMPTY_CHECK,
+    text: sample.text,
+    claimedSender: sample.claimedSender,
+    sampleId: sample.id,
+    result: { ...DEMO_RESULTS[sample.id], demo: true },
+  };
+}
+
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
   const [settings, setSettings] = useState(loadSettings);
-  const [check, setCheck] = useState(EMPTY_CHECK);
+  const [check, setCheck] = useState(devPreviewCheck);
   // Polite screen-reader messages, e.g. "Example loaded". The count makes
   // repeating the same sentence still get read out.
   const [announcement, setAnnouncement] = useState({ text: '', n: 0 });
+  // Demo mode: no API key on the server (or the server can't be reached).
+  const [demoMode, setDemoMode] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/health')
+      .then((r) => r.json())
+      .then((d) => setDemoMode(Boolean(d.demoMode)))
+      .catch(() => setDemoMode(true));
+  }, []);
 
   useEffect(() => {
     try {
@@ -58,8 +86,10 @@ export function AppProvider({ children }) {
       resetCheck: () => setCheck(EMPTY_CHECK),
       announcement,
       announce: (text) => setAnnouncement((a) => ({ text, n: a.n + 1 })),
+      demoMode,
+      setDemoMode,
     }),
-    [settings, check, announcement],
+    [settings, check, announcement, demoMode],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

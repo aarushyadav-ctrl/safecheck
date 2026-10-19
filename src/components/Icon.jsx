@@ -56,6 +56,39 @@ const PATHS = {
     </>
   ),
   play: <path d="M7 4.5v15l12-7.5z" />,
+  shieldAlert: (
+    <>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <path d="M12 8v4.5M12 16h.01" />
+    </>
+  ),
+  shieldCheck: (
+    <>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <path d="m8.5 12 2.5 2.5 4.5-5" />
+    </>
+  ),
+  triangle: (
+    <>
+      <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
+      <path d="M12 9v4M12 17h.01" />
+    </>
+  ),
+  check: <path d="M20 6 9 17l-5-5" />,
+  users: (
+    <>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8" />
+    </>
+  ),
+  external: <path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />,
+  pointer: (
+    <>
+      <path d="M9 9l5 12 1.8-5.2L21 14z" />
+      <path d="M7.2 2.2 8 5.1M5.1 7.9l-2.9-.8M14 4.1 12 6.2M6.2 12l-2.1 2" />
+    </>
+  ),
 };
 
 export default function Icon({ name, size = '1.25em', label, className = '' }) {
