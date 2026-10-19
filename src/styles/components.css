@@ -1,0 +1,232 @@
+/* ---------- Small helpers ---------- */
+.icon {
+  flex: none;
+}
+
+.lead {
+  font-size: var(--step-1);
+  color: var(--ink-soft);
+  margin-bottom: var(--space-6);
+}
+
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  font-weight: 700;
+}
+
+.message-text {
+  font-family: var(--font-message);
+  line-height: 1.6;
+  overflow-wrap: anywhere; /* long scam links never push the page sideways */
+}
+
+/* ---------- Extra button styles ---------- */
+.btn--small {
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-4);
+}
+.btn--quiet {
+  background: transparent;
+  color: var(--ink);
+  border-color: transparent;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.btn--quiet:hover {
+  background: var(--accent-tint);
+}
+.btn--wide {
+  width: 100%;
+}
+@media (min-width: 40rem) {
+  .btn--wide {
+    width: auto;
+    min-width: 18rem;
+  }
+}
+
+/* ---------- Form fields ---------- */
+.field {
+  margin: 0 0 var(--space-6);
+}
+.field__label {
+  display: block;
+  font-weight: 700;
+  font-size: var(--step-1);
+  line-height: 1.3;
+}
+.field__optional {
+  font-weight: 400;
+  font-size: var(--step-0);
+  color: var(--ink-soft);
+}
+.field__hint {
+  color: var(--ink-soft);
+  margin: var(--space-1) 0 var(--space-3);
+}
+.field__input {
+  display: block;
+  width: 100%;
+  min-height: 3.25rem;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.field__input:hover {
+  border-color: var(--ink);
+}
+.field__input::placeholder {
+  color: var(--ink-soft);
+  opacity: 0.85;
+}
+.field__input--message {
+  resize: vertical;
+  min-height: 10rem;
+}
+.field__input[aria-invalid='true'] {
+  border-color: var(--scam);
+  border-width: 3px;
+}
+.field__error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  color: var(--scam);
+  font-weight: 700;
+}
+.field__error .icon {
+  margin-top: 0.2em;
+}
+
+/* ---------- Example chips ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface);
+  border: 2px solid var(--line-strong);
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+.chip:hover {
+  border-color: var(--accent);
+}
+.chip:active {
+  transform: scale(0.97);
+}
+/* "Loaded" is shown with a check mark too, not only a color change. */
+.chip[aria-pressed='true'] {
+  background: var(--accent-tint);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.chip[aria-pressed='true']::before {
+  content: '✓';
+  font-weight: 700;
+}
+
+/* ---------- Highlighter: the signature motion ----------
+   A yellow marker sweeps across each warning sign, left to right,
+   then its number appears. With reduced motion it is simply already marked. */
+.flag {
+  background-color: transparent;
+  color: inherit;
+  background-image: linear-gradient(var(--marker), var(--marker));
+  background-repeat: no-repeat;
+  background-position: 0 55%;
+  background-size: 0% 88%;
+  border-bottom: 2px solid var(--marker-ink); /* not color alone */
+  padding: 0 0.1em;
+  animation: marker-sweep 620ms var(--ease-out) forwards;
+  animation-delay: calc(500ms + var(--i, 0) * 520ms);
+}
+.flag__num {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.45em;
+  height: 1.45em;
+  margin-left: 0.3em;
+  padding: 0 0.2em;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 0.72em;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: 0.3em;
+  transform: scale(0);
+  animation: pop-in 260ms var(--ease-out) forwards;
+  animation-delay: calc(980ms + var(--i, 0) * 520ms);
+}
+.flag-list {
+  list-style: none;
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.flag-list li {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  opacity: 0;
+  animation: fade-up 400ms var(--ease-out) forwards;
+  animation-delay: calc(1050ms + var(--i, 0) * 520ms);
+}
+.flag-list__num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-top: 0.05em;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: var(--step--1);
+  font-weight: 700;
+}
+
+@keyframes marker-sweep {
+  to {
+    background-size: 100% 88%;
+  }
+}
+@keyframes pop-in {
+  70% {
+    transform: scale(1.12);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* High contrast: a solid outline replaces the soft marker edge. */
+:root[data-contrast='high'] .flag {
+  border-bottom-width: 3px;
+}

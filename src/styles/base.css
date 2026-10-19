@@ -1,0 +1,172 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--space-4);
+  text-wrap: balance;
+}
+h1 {
+  font-size: var(--step-4);
+}
+h2 {
+  font-size: var(--step-3);
+}
+h3 {
+  font-size: var(--step-2);
+}
+
+p {
+  margin: 0 0 var(--space-4);
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+}
+a:hover {
+  color: var(--accent-hover);
+  text-decoration-thickness: 0.14em;
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* One clear focus style everywhere: a ring with a white gap so it shows on any color. */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px var(--focus-gap);
+}
+/* Headings receive focus after navigation. They don't need a ring, focus is only for screen readers. */
+h1:focus,
+#main:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 3.25rem; /* well above the 44px minimum at every text size */
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius);
+  border: 2px solid transparent;
+  font-weight: 700;
+  font-size: var(--step-0);
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+.btn:active {
+  transform: scale(0.98);
+}
+.btn--primary {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.btn--primary:hover {
+  background: var(--accent-hover);
+  color: var(--on-accent);
+}
+.btn--secondary {
+  background: var(--surface);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.btn--secondary:hover {
+  background: var(--accent-tint);
+  color: var(--accent-hover);
+}
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-block: var(--space-5);
+}
+
+/* Final safety net: kill every animation and transition when motion is reduced. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+:root[data-motion='reduce'] *,
+:root[data-motion='reduce'] *::before,
+:root[data-motion='reduce'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  animation-delay: 0s !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
