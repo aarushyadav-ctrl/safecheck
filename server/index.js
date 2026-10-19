@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
-import { analyzeMessage } from './ai.js';
+import { analyzeMessage, LANGUAGES } from './ai.js';
 import { findDemoResult } from '../shared/demoResults.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -14,6 +14,7 @@ dotenv.config({ path: path.join(here, '.env'), quiet: true });
 const app = express();
 const PORT = Number(process.env.API_PORT) || 3001;
 const MAX_TEXT = 8000;
+const MAX_LINK = 2048;
 const IMAGE_DATA_URL = /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/;
 
 // Screenshots arrive as base64, so allow a larger body than the default.
@@ -33,6 +34,12 @@ const ERRORS = {
   provider_down: [502, "The checking service isn't answering right now. Please try again in a few minutes."],
   bad_request: [502, 'Something went wrong while checking. Please try again.'],
   bad_response: [502, "We got an answer we couldn't understand. Please try again."],
+  // Problems with what was sent (the website shows these in the chosen language).
+  bad_input: [400, 'Something was wrong with the message. Please try again.'],
+  empty: [400, 'Please paste the message, add a screenshot, or enter a link first.'],
+  too_long: [400, 'That message is very long. Please paste only the part that seems suspicious.'],
+  link_too_long: [400, 'That link is too long to check.'],
+  bad_image: [400, "We couldn't read that picture. Please try a different screenshot."],
 };
 
 // Light rate limit, so one person (or a script) can't use up the free API key.
@@ -53,38 +60,44 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.post('/api/analyze', analyzeLimiter, async (req, res) => {
-  const { text = '', imageBase64 = null, claimedSender = '', sampleId = null } = req.body || {};
+  const {
+    text = '',
+    imageBase64 = null,
+    link = '',
+    claimedSender = '',
+    sampleId = null,
+    language = 'en',
+  } = req.body || {};
+  const fail = (code, status = 400) => {
+    const [, message] = ERRORS[code] || [status, ERRORS.bad_input[1]];
+    return res.status(status).json({ code, message });
+  };
 
-  if (typeof text !== 'string' || typeof claimedSender !== 'string') {
-    return res.status(400).json({ message: 'Something was wrong with the message. Please try again.' });
+  if (typeof text !== 'string' || typeof claimedSender !== 'string' || typeof link !== 'string') {
+    return fail('bad_input');
   }
-  if (!text.trim() && !imageBase64) {
-    return res.status(400).json({ message: 'Please paste the message or add a screenshot first.' });
-  }
-  if (text.length > MAX_TEXT) {
-    return res.status(400).json({
-      message: 'That message is very long. Please paste only the part that seems suspicious.',
-    });
-  }
+  if (!text.trim() && !imageBase64 && !link.trim()) return fail('empty');
+  if (text.length > MAX_TEXT) return fail('too_long');
+  if (link.length > MAX_LINK) return fail('link_too_long');
   if (imageBase64 && (typeof imageBase64 !== 'string' || !IMAGE_DATA_URL.test(imageBase64))) {
-    return res.status(400).json({
-      message: "We couldn't read that picture. Please try a different screenshot.",
-    });
+    return fail('bad_image');
   }
+  const lang = LANGUAGES[language] ? language : 'en';
 
-  const demo = findDemoResult({ sampleId, text });
+  const demo = findDemoResult({ sampleId, text, link });
 
   if (!hasKey()) {
     if (demo) return res.json({ ...demo, demo: true });
-    const [status, message] = ERRORS.not_configured;
-    return res.status(status).json({ code: 'not_configured', message });
+    return fail('not_configured', ERRORS.not_configured[0]);
   }
 
   try {
     const result = await analyzeMessage({
       text: text.trim(),
       imageBase64,
+      link: link.trim(),
       claimedSender: claimedSender.trim().slice(0, 200),
+      language: lang,
     });
     return res.json(result);
   } catch (err) {
