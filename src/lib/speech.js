@@ -18,9 +18,9 @@ export const speechSupported = hasDeviceVoice || hasAudio;
 
 export const NATURAL_VOICES = ['hannah', 'troy'];
 export const SPEEDS = [
-  { value: 0.8, id: 'slow' },
+  { value: 0.5, id: 'slow' },
   { value: 1, id: 'normal' },
-  { value: 1.2, id: 'fast' },
+  { value: 1.75, id: 'fast' },
 ];
 const SPEECH_LANG = { en: 'en-US', es: 'es-US' };
 const NATURAL_MAX = 200; // the natural voice takes up to 200 characters at a time

@@ -10,7 +10,7 @@ export const DEFAULT_SETTINGS = {
   textSize: 'standard', // 'standard' | 'large' | 'largest'
   highContrast: false,
   reduceMotion: false,
-  readSpeed: 1, // 0.8 slow, 1 normal, 1.2 fast
+  readSpeed: 1, // 0.5 slow, 1 normal, 1.75 fast
   voice: 'hannah', // natural voice ('hannah' | 'troy') or 'device'
   language: 'en', // 'en' | 'es'
 };
@@ -35,9 +35,9 @@ export const EMPTY_CHECK = {
 function loadSettings() {
   try {
     const saved = { ...DEFAULT_SETTINGS, ...JSON.parse(sessionStorage.getItem(SETTINGS_KEY)) };
-    // Older versions used other speeds (0.7, 0.9, 1.1): use the nearest current one.
+    // Older versions used other speeds (0.7, 0.8, 0.9, 1.1, 1.2): keep the same choice.
     const speed = Number(saved.readSpeed) || 1;
-    saved.readSpeed = speed < 0.9 ? 0.8 : speed < 1.1 ? 1 : 1.2;
+    saved.readSpeed = speed < 0.9 ? 0.5 : speed <= 1.05 ? 1 : 1.75;
     return saved;
   } catch {
     return DEFAULT_SETTINGS;
