@@ -408,6 +408,7 @@ export default {
     readStep: 'Read this step to me',
     stop: 'Stop reading',
     stopShort: 'Stop',
+    loading: 'Getting the voice ready…',
   },
 
   steps: {
@@ -707,6 +708,12 @@ export default {
     motionDevice: 'Your device already asks for less motion, so SafeCheck uses less motion too.',
     on: 'On',
     off: 'Off',
+    voice: 'Voice',
+    voices: { hannah: 'Hannah (natural)', troy: 'Troy (natural)', device: "This device's voice" },
+    voiceHint:
+      'Natural voices sound like a real person. They need the internet, and the words being read are sent to our voice service. Nothing is saved.',
+    voiceSpanish: "Natural voices speak English only, so Spanish uses this device's voice.",
+    voiceUnavailable: "Natural voices aren't available right now, so SafeCheck uses this device's voice.",
     speed: 'Reading speed',
     speedHint: 'How fast "Read this to me" talks.',
     speeds: { slow: 'Slow', normal: 'Normal', fast: 'Fast' },
@@ -992,7 +999,7 @@ export default {
     privacyBody:
       "Your message is sent only to check it. We don't save it, we don't keep a history, and there is no account. When you close this window, it's gone.",
     privacyRedact:
-      'Before a message is sent, SafeCheck hides card numbers, Social Security numbers, bank numbers, codes, and passwords. Links and phone numbers stay, because they help spot scams.',
+      'Before a message is sent, SafeCheck hides card numbers, Social Security numbers, bank numbers, codes, and passwords. Links and phone numbers stay, because they help spot scams. With a natural voice, the words being read aloud are sent to our voice service and not saved.',
     signsTitle: 'Common warning signs',
     signsLead: 'Scams change, but most use the same few tricks. Watch for these:',
     signs: [

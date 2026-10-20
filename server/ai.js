@@ -156,6 +156,56 @@ export async function analyzeMessage({
   return validateResult(raw);
 }
 
+// ---------- Natural voice (text to speech) ----------
+// Groq's Orpheus model speaks English only and takes up to 200 characters per
+// request, so the website sends one sentence-sized piece at a time.
+export const TTS_VOICES = ['hannah', 'diana', 'autumn', 'troy', 'daniel', 'austin'];
+export const TTS_MAX_CHARS = 200;
+
+export function ttsConfigured() {
+  return Boolean(process.env.AI_API_KEY && process.env.AI_BASE_URL && process.env.AI_TTS_MODEL);
+}
+
+/**
+ * Turns a short piece of text into speech.
+ * @returns {Promise<{ audio: ArrayBuffer, type: string }>}
+ * @throws AIError: not_configured, tts_terms, invalid_key, bad_model, rate_limited, timeout, provider_down
+ */
+export async function synthesizeSpeech({ text, voice }) {
+  if (!ttsConfigured()) throw new AIError('not_configured');
+  const url = `${process.env.AI_BASE_URL.replace(/\/+$/, '')}/audio/speech`;
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.AI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: process.env.AI_TTS_MODEL,
+        voice: TTS_VOICES.includes(voice) ? voice : process.env.AI_TTS_VOICE || 'hannah',
+        input: text,
+        response_format: 'wav',
+      }),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+  } catch (err) {
+    if (err.name === 'TimeoutError') throw new AIError('timeout');
+    throw new AIError('provider_down', err.message);
+  }
+  if (res.ok) {
+    return { audio: await res.arrayBuffer(), type: res.headers.get('content-type') || 'audio/wav' };
+  }
+  const detail = await res.text().catch(() => '');
+  // Some voice models must be switched on once by the account owner.
+  if (/terms acceptance/i.test(detail)) throw new AIError('tts_terms', detail);
+  if (res.status === 401 || res.status === 403) throw new AIError('invalid_key', detail);
+  if (res.status === 429) throw new AIError('rate_limited', detail);
+  if (res.status === 404 || /model/i.test(detail)) throw new AIError('bad_model', detail);
+  throw new AIError('provider_down', `${res.status} ${detail}`);
+}
+
 async function callProvider(body) {
   const url = `${process.env.AI_BASE_URL.replace(/\/+$/, '')}/chat/completions`;
   let res;

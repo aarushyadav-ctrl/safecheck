@@ -412,6 +412,7 @@ export default {
     readStep: 'Léame este paso',
     stop: 'Dejar de leer',
     stopShort: 'Detener',
+    loading: 'Preparando la voz…',
   },
 
   steps: {
@@ -711,6 +712,12 @@ export default {
     motionDevice: 'Su dispositivo ya pide menos movimiento, así que SafeCheck también usa menos.',
     on: 'Sí',
     off: 'No',
+    voice: 'Voz',
+    voices: { hannah: 'Hannah (natural, en inglés)', troy: 'Troy (natural, en inglés)', device: 'La voz de este dispositivo' },
+    voiceHint:
+      'Las voces naturales suenan como una persona real. Necesitan internet, y las palabras que se leen se envían a nuestro servicio de voz. No se guarda nada.',
+    voiceSpanish: 'Las voces naturales solo hablan inglés, así que en español se usa la voz de este dispositivo.',
+    voiceUnavailable: 'Las voces naturales no están disponibles ahora, así que SafeCheck usa la voz de este dispositivo.',
     speed: 'Velocidad de lectura',
     speedHint: 'Qué tan rápido habla "Léamelo en voz alta".',
     speeds: { slow: 'Lenta', normal: 'Normal', fast: 'Rápida' },
@@ -996,7 +1003,7 @@ export default {
     privacyBody:
       'Su mensaje se envía solo para revisarlo. No lo guardamos, no hay historial y no hay cuenta. Cuando cierra esta ventana, desaparece.',
     privacyRedact:
-      'Antes de enviar un mensaje, SafeCheck oculta números de tarjeta, de Seguro Social, de banco, códigos y contraseñas. Los enlaces y los números de teléfono se quedan, porque ayudan a detectar estafas.',
+      'Antes de enviar un mensaje, SafeCheck oculta números de tarjeta, de Seguro Social, de banco, códigos y contraseñas. Los enlaces y los números de teléfono se quedan, porque ayudan a detectar estafas. Con una voz natural, las palabras que se leen en voz alta se envían a nuestro servicio de voz y no se guardan.',
     signsTitle: 'Señales de alerta comunes',
     signsLead: 'Las estafas cambian, pero la mayoría usa los mismos trucos. Esté atento a esto:',
     signs: [

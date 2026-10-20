@@ -10,7 +10,8 @@ export const DEFAULT_SETTINGS = {
   textSize: 'standard', // 'standard' | 'large' | 'largest'
   highContrast: false,
   reduceMotion: false,
-  readSpeed: 0.9, // speech rate, slightly slower than normal by default
+  readSpeed: 1, // 0.8 slow, 1 normal, 1.2 fast
+  voice: 'hannah', // natural voice ('hannah' | 'troy') or 'device'
   language: 'en', // 'en' | 'es'
 };
 
@@ -33,8 +34,11 @@ export const EMPTY_CHECK = {
 // Settings and the chosen mode last for this browser session only.
 function loadSettings() {
   try {
-    const saved = JSON.parse(sessionStorage.getItem(SETTINGS_KEY));
-    return { ...DEFAULT_SETTINGS, ...saved };
+    const saved = { ...DEFAULT_SETTINGS, ...JSON.parse(sessionStorage.getItem(SETTINGS_KEY)) };
+    // Older versions used other speeds (0.7, 0.9, 1.1): use the nearest current one.
+    const speed = Number(saved.readSpeed) || 1;
+    saved.readSpeed = speed < 0.9 ? 0.8 : speed < 1.1 ? 1 : 1.2;
+    return saved;
   } catch {
     return DEFAULT_SETTINGS;
   }
@@ -81,13 +85,18 @@ export function AppProvider({ children }) {
   const [announcement, setAnnouncement] = useState({ text: '', n: 0 });
   // Demo mode: no API key on the server (or the server can't be reached).
   const [demoMode, setDemoMode] = useState(false);
+  // Natural (human-sounding) voice: set up on the server, and not failed this visit.
+  const [naturalVoice, setNaturalVoice] = useState(false);
   // The settings panel opens over any screen, so nothing typed is ever lost.
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/health')
       .then((r) => r.json())
-      .then((d) => setDemoMode(Boolean(d.demoMode)))
+      .then((d) => {
+        setDemoMode(Boolean(d.demoMode));
+        setNaturalVoice(Boolean(d.naturalVoice));
+      })
       .catch(() => setDemoMode(true));
   }, []);
 
@@ -127,11 +136,13 @@ export function AppProvider({ children }) {
       announce: (text) => setAnnouncement((a) => ({ text, n: a.n + 1 })),
       demoMode,
       setDemoMode,
+      naturalVoice,
+      setNaturalVoice,
       settingsOpen,
       openSettings: () => setSettingsOpen(true),
       closeSettings: () => setSettingsOpen(false),
     }),
-    [settings, mode, check, announcement, demoMode, settingsOpen],
+    [settings, mode, check, announcement, demoMode, naturalVoice, settingsOpen],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

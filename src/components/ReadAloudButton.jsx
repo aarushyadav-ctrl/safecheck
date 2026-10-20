@@ -4,7 +4,7 @@ import { speechSupported, useSpeech } from '../lib/speech.js';
 
 /** "Read this to me" / "Stop reading". Hidden on browsers that can't speak. */
 export default function ReadAloudButton({ getText, label, className = '' }) {
-  const { speaking, speak, stop } = useSpeech();
+  const { status, speaking, speak, stop } = useSpeech();
   const t = useT();
   if (!speechSupported) return null;
 
@@ -13,9 +13,10 @@ export default function ReadAloudButton({ getText, label, className = '' }) {
       type="button"
       className={`btn btn--secondary ${className}`}
       onClick={() => (speaking ? stop() : speak(getText()))}
+      aria-busy={status === 'loading' || undefined}
     >
       <Icon name={speaking ? 'stop' : 'speaker'} />
-      {speaking ? t('speech.stop') : label || t('speech.read')}
+      {status === 'loading' ? t('speech.loading') : speaking ? t('speech.stop') : label || t('speech.read')}
     </button>
   );
 }

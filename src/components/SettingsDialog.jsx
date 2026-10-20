@@ -2,14 +2,9 @@ import { useEffect, useRef } from 'react';
 import Icon from './Icon.jsx';
 import { useApp } from '../context/AppContext.jsx';
 import { LANGUAGES, translate, useT } from '../i18n/index.js';
-import { speechSupported, useSpeech } from '../lib/speech.js';
+import { NATURAL_VOICES, SPEEDS, speechSupported, useSpeech } from '../lib/speech.js';
 
 const TEXT_SIZES = ['standard', 'large', 'largest'];
-const SPEEDS = [
-  { value: 0.7, id: 'slow' },
-  { value: 0.9, id: 'normal' },
-  { value: 1.1, id: 'fast' },
-];
 
 const deviceReducesMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -20,12 +15,17 @@ const deviceReducesMotion = () =>
  * and returns focus to the button that opened it. Changes apply right away.
  */
 export default function SettingsDialog() {
-  const { settings, updateSettings, resetSettings, settingsOpen, closeSettings, announce } =
+  const { settings, updateSettings, resetSettings, settingsOpen, closeSettings, announce, naturalVoice } =
     useApp();
   const t = useT();
   const ref = useRef(null);
   const opener = useRef(null);
-  const { speak, stop, speaking } = useSpeech();
+  const { speak, stop, speaking, status } = useSpeech();
+  const voiceNote = !naturalVoice
+    ? t('settings.voiceUnavailable')
+    : settings.language !== 'en'
+      ? t('settings.voiceSpanish')
+      : t('settings.voiceHint');
 
   useEffect(() => {
     const dialog = ref.current;
@@ -131,6 +131,34 @@ export default function SettingsDialog() {
 
         {speechSupported && (
           <fieldset className="settings__group">
+            <legend>{t('settings.voice')}</legend>
+            <p className="settings__hint" id="voice-note">
+              {voiceNote}
+            </p>
+            <div className="speed-options">
+              {[...NATURAL_VOICES, 'device'].map((v) => (
+                <label key={v} className="speed-option">
+                  <input
+                    type="radio"
+                    name="voice"
+                    value={v}
+                    checked={settings.voice === v}
+                    disabled={v !== 'device' && !naturalVoice}
+                    onChange={() => {
+                      stop();
+                      updateSettings({ voice: v });
+                    }}
+                    aria-describedby="voice-note"
+                  />
+                  <span>{t(`settings.voices.${v}`)}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
+
+        {speechSupported && (
+          <fieldset className="settings__group">
             <legend>{t('settings.speed')}</legend>
             <p className="settings__hint">{t('settings.speedHint')}</p>
             <div className="speed-options">
@@ -141,7 +169,10 @@ export default function SettingsDialog() {
                     name="read-speed"
                     value={s.value}
                     checked={settings.readSpeed === s.value}
-                    onChange={() => updateSettings({ readSpeed: s.value })}
+                    onChange={() => {
+                      stop();
+                      updateSettings({ readSpeed: s.value });
+                    }}
                   />
                   <span>{t(`settings.speeds.${s.id}`)}</span>
                 </label>
@@ -153,7 +184,7 @@ export default function SettingsDialog() {
               onClick={() => (speaking ? stop() : speak(t('settings.sampleSpeech')))}
             >
               <Icon name={speaking ? 'stop' : 'speaker'} />
-              {speaking ? t('speech.stopShort') : t('settings.hearSample')}
+              {status === 'loading' ? t('speech.loading') : speaking ? t('speech.stopShort') : t('settings.hearSample')}
             </button>
           </fieldset>
         )}

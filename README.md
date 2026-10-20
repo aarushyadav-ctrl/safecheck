@@ -53,7 +53,7 @@ wherever he is.
 | **What should I do now?** | Steps tailored to the scam type (bank, delivery, family emergency, jobs, payment apps, marketplaces, gaming, brand DMs, crypto, sextortion), one at a time in Simple mode or as a checklist in Quick mode, plus a separate path if you already tapped a link. |
 | **Phone call coach** | "Someone is on the phone with me right now." Tap what the caller is asking for (gift cards, a code, remote access, "keep it secret"...) and instantly get a verdict, why, a short polite script to end the call, and what to do after hanging up. Works entirely without AI. |
 | **Private details hidden first** | Before anything is sent, SafeCheck hides card numbers (checked with the Luhn formula), Social Security numbers, bank account and routing numbers, one-time codes, and passwords or PINs, then says exactly what it hid ("We hid 2 items before checking: a card number and a code") and lets you see what was sent. Links, sender names and phone numbers are kept. |
-| **Read this to me** | Reads the verdict, explanations, steps, and the call script out loud, in English or Spanish, at the speed you choose. |
+| **Read this to me** | Reads the verdict, explanations, steps, and the call script out loud at the speed you choose (0.8×, 1×, 1.2×). English uses a natural, human-sounding voice (Hannah or Troy, from Groq's Orpheus model) when it is set up; Spanish, or any time the natural voice isn't available, uses the most natural voice on the device. |
 | **Copy summary / Ask someone I trust** | Quick mode copies a short summary. "Ask someone I trust" writes an editable note to share by the share sheet, text, email, or copy. Links in it are made unclickable (`example[.]com`). |
 | **Spot the Scam practice** | A 10-message quiz for both age groups, with score, streak, explanations, and "Share my score". |
 | **Family safety plan** | Explains AI voice-cloning scams and helps a family choose a code word, trusted contacts, and a rule, then makes a printable card and a shareable summary (the code word is left out by default). Nothing is sent or saved. |
@@ -127,7 +127,8 @@ including the settings panel, high contrast, and Spanish. Every screen was measu
   [`server/ai.js`](server/ai.js) behind one function,
   `analyzeMessage({ text, imageBase64, link, claimedSender, language })`.
 - **jsQR** for reading QR codes in the browser (loaded only when needed)
-- **Web Speech API** for read-aloud, **Web Share API** for the share sheet
+- **Groq Orpheus** text-to-speech for the natural voice (through `POST /api/speak`), with the
+  **Web Speech API** as the device-voice fallback; **Web Share API** for the share sheet
 - A small translation system ([`src/i18n`](src/i18n)): one file per language
 - No database, no accounts, no login
 
@@ -202,8 +203,12 @@ the same kind of API, so you only change settings, not code.
    [Groq models](https://console.groq.com/docs/models),
    [Groq vision](https://console.groq.com/docs/vision),
    [xAI models](https://docs.x.ai/docs/models).
-5. **Restart** `npm run dev`. The terminal says `Live checking on`, and the demo banner
-   disappears.
+5. **Turn on the natural voice (optional, Groq).** Groq asks the account owner to accept
+   the Orpheus voice model's terms once: open
+   https://console.groq.com/playground?model=canopylabs%2Forpheus-v1-english and accept.
+   Until then, "Read this to me" uses the device's own voice.
+6. **Restart** `npm run dev`. The terminal says `Live checking on` and `Natural voice on`,
+   and the demo banner disappears.
 
 Your key stays safe: `server/.env` is git-ignored, and only the server reads it.
 
@@ -214,13 +219,15 @@ Your key stays safe: `server/.env` is git-ignored, and only the server reads it.
 | `AI_MODEL` | Model for pasted text and links | `openai/gpt-oss-120b` |
 | `AI_VISION_MODEL` | Model that can read screenshots | `qwen/qwen3.8-27b` |
 | `AI_REASONING_EFFORT` | How long "reasoning" models think (`low` keeps it fast). Remove for models that don't support it. | `low` |
+| `AI_TTS_MODEL` | Natural voice for "Read this to me" (English). Remove to always use the device voice. | `canopylabs/orpheus-v1-english` |
+| `AI_TTS_VOICE` | Natural voice used if none is chosen in Settings | `hannah` |
 | `API_PORT` | Port for the API server | `3001` |
 
 ## Project structure
 
 ```
 server/
-  index.js          Express server: /api/health, /api/analyze, rate limit, errors
+  index.js          Express server: /api/health, /api/analyze, /api/speak, rate limits, errors
   ai.js             The only file that talks to the AI provider
   .env.example      Settings template (copy to .env)
 shared/
@@ -250,6 +257,8 @@ already checked. This shortcut is left out of production builds.
 - Messages are sent to the AI provider only to check them, after card numbers, Social
   Security numbers, bank numbers, codes, and passwords are hidden. SafeCheck has no
   database and does not save or log message contents.
+- With a natural voice, the words being read aloud are sent to the voice service and not
+  saved.
 - Links are never opened. QR codes are read on your device. The family safety plan never
   leaves your device.
 - Screenshots are sent as pictures, so private details inside them can't be hidden;

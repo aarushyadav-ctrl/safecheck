@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
-import { analyzeMessage, LANGUAGES } from './ai.js';
+import { analyzeMessage, LANGUAGES, synthesizeSpeech, ttsConfigured, TTS_MAX_CHARS } from './ai.js';
 import { findDemoResult } from '../shared/demoResults.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -56,7 +56,42 @@ const analyzeLimiter = rateLimit({
 });
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, demoMode: !hasKey() });
+  res.json({ ok: true, demoMode: !hasKey(), naturalVoice: ttsConfigured() });
+});
+
+// Natural voice for "Read this to me". Pieces are short, so allow more of them.
+const speakLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 90,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  handler: (_req, res) => res.status(429).json({ code: 'too_many' }),
+});
+let warnedAboutTerms = false;
+
+app.post('/api/speak', speakLimiter, async (req, res) => {
+  const { text = '', voice = '' } = req.body || {};
+  if (typeof text !== 'string' || !text.trim() || text.length > TTS_MAX_CHARS) {
+    return res.status(400).json({ code: 'bad_input' });
+  }
+  if (!ttsConfigured()) return res.status(503).json({ code: 'not_configured' });
+  try {
+    const { audio, type } = await synthesizeSpeech({ text: text.trim(), voice });
+    res.set('Content-Type', type);
+    res.set('Cache-Control', 'no-store'); // spoken words are never stored
+    return res.send(Buffer.from(audio));
+  } catch (err) {
+    if (err.code === 'tts_terms' && !warnedAboutTerms) {
+      warnedAboutTerms = true;
+      console.warn(
+        `[speak] The natural voice needs one-time approval. Open ${process.env.AI_BASE_URL?.includes('groq') ? 'https://console.groq.com/playground?model=' + encodeURIComponent(process.env.AI_TTS_MODEL) : 'your provider console'} and accept the terms. Until then, the device voice is used.`,
+      );
+    } else if (err.code !== 'tts_terms') {
+      console.warn(`[speak] ${err.code || 'error'}: ${String(err.message).slice(0, 160)}`);
+    }
+    const status = err.code === 'rate_limited' ? 429 : 503;
+    return res.status(status).json({ code: err.code || 'provider_down' });
+  }
 });
 
 app.post('/api/analyze', analyzeLimiter, async (req, res) => {
@@ -120,4 +155,5 @@ app.listen(PORT, () => {
   console.log(`SafeCheck server ready on http://localhost:${PORT}`);
   if (!hasKey()) console.log('No AI_API_KEY found in server/.env: running in demo mode (examples only).');
   else console.log(`Live checking on: ${process.env.AI_BASE_URL} (${process.env.AI_MODEL})`);
+  if (ttsConfigured()) console.log(`Natural voice on: ${process.env.AI_TTS_MODEL}`);
 });
